@@ -1,5 +1,5 @@
 import { useNavigation } from '@react-navigation/core'
-import { createUserWithEmailAndPassword } from 'firebase/auth'
+import {signInWithEmailAndPassword } from 'firebase/auth'
 import React, { useEffect, useState } from 'react'
 import {  KeyboardAvoidingView, StyleSheet, Text, TextInput, TouchableOpacity, View, Image } from 'react-native'
 import { auth } from '../firebase'
@@ -35,7 +35,7 @@ const LoginScreen = () => {
       behavior= 'height'
     >
       <View style={styles.inputContainer}>
-        <Image source={require('../assets/VitoriaGuimaraes.png')} style = {{ width: 150, height: 200, alignSelf: 'center'}}/>
+        <Image source={require('../assets/VitoriaGuimaraes.png')} style = {{ width: 150, height: 200, alignSelf: 'center', resizeMode: 'contain'}}/>
         <TextInput
           placeholder="Email"
           value={email}
@@ -60,9 +60,9 @@ const LoginScreen = () => {
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => navigation.navigate('Signin')}
-          style={[styles.button, styles.buttonOutline]}
+          style={styles.button}
         >
-          <Text style={styles.buttonOutlineText}>Register</Text>
+          <Text style={styles.buttonText}>Register</Text>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -76,6 +76,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#a9a9a9'
   },
   inputContainer: {
     width: '80%'
@@ -94,11 +95,12 @@ const styles = StyleSheet.create({
     marginTop: 40,
   },
   button: {
-    backgroundColor: '#0782F9',
+    backgroundColor: 'yellow',
     width: '100%',
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',
+    marginBottom: 5
   },
   buttonOutline: {
     backgroundColor: 'white',
@@ -115,5 +117,10 @@ const styles = StyleSheet.create({
     color: '#0782F9',
     fontWeight: '700',
     fontSize: 16,
+  },
+  image :{
+    height: '50%',
+    width: '120%',
+    resizeMode:'contain'
   },
 })

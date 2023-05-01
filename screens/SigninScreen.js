@@ -80,10 +80,11 @@ const SigninScreen = () => {
       <TouchableOpacity 
         onPress={() => handleOptionPress('Jogadora')}
         style={{ 
-          backgroundColor: role === 'Jogadora' ? '#1abc9c' : '#ecf0f1',
+          backgroundColor: role === 'Jogadora' ? 'yellow' : '#ecf0f1',
           padding: 10,
           borderRadius: 5,
-          marginBottom: 10,
+          marginBottom: 5,
+          marginTop: 3
         }}
       >
         <Text style={{ color: role === 'Jogadora' ? '#fff' : '#2c3e50' }}>Jogadora</Text>
@@ -91,7 +92,7 @@ const SigninScreen = () => {
       <TouchableOpacity 
         onPress={() => handleOptionPress('Equipa Técnica')}
         style={{ 
-          backgroundColor: role === 'Equipa Técnica' ? '#1abc9c' : '#ecf0f1',
+          backgroundColor: role === 'Equipa Técnica' ? 'yellow' : '#ecf0f1',
           padding: 10,
           borderRadius: 5,
         }}
@@ -112,9 +113,9 @@ const SigninScreen = () => {
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => navigation.navigate('Login')}
-          style={[styles.button, styles.buttonOutline]}
+          style={styles.button}
         >
-          <Text style={styles.buttonOutlineText}>Go back</Text>
+          <Text style={styles.buttonText}>Go back</Text>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -128,6 +129,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#a9a9a9'
   },
   inputContainer: {
     width: '80%'
@@ -138,6 +140,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 10,
     marginTop: 5,
+    
   },
   buttonContainer: {
     width: '60%',
@@ -146,11 +149,12 @@ const styles = StyleSheet.create({
     marginTop: 40,
   },
   button: {
-    backgroundColor: '#0782F9',
+    backgroundColor: 'yellow',
     width: '100%',
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',
+    marginBottom: 5
   },
   buttonOutline: {
     backgroundColor: 'white',
