@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native'
+import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView, Alert } from 'react-native'
 import React, {useState} from 'react'
 import { auth } from '../firebase'
 import { useNavigation } from '@react-navigation/core'
@@ -8,6 +8,7 @@ import moment from 'moment';
 import 'moment/locale/pt-br';
 import { Modal, TextInput, Button, Image} from 'react-native';
 import DateTimePickerModal from "react-native-modal-datetime-picker";
+import * as ImagePicker from 'expo-image-picker';
 
 
 moment.locale('pt-br');
@@ -94,7 +95,6 @@ const CalendarScreen = () => {
     setEventPlace('');
     
   };
-
   const onSaveEvent = () => {
     const newEvent = {
       date: selectedDate,
@@ -111,7 +111,6 @@ const CalendarScreen = () => {
     setModalVisible(false);
     setEditingEvent(null); 
   };
-
   const onEditEvent = () => {
     const updatedEventList = eventList.map((event) => {
       if (event === editingEvent) {
@@ -129,14 +128,6 @@ const CalendarScreen = () => {
     setEditingEvent(null);
     setEditModalVisible(false);
   };
-
-  /*const onDeleteEvent = () => {
-    const updatedEventList = eventList.filter((event) => event !== editingEvent);
-    setEventList(updatedEventList);
-    setEditingEvent(null);
-    setEditModalVisible(false);
-  }; */
-
   const onEventPress = (event) => {
     setSelectedDate(event.date);
     setSelectedTime(event.time);
@@ -151,6 +142,38 @@ const CalendarScreen = () => {
     obj[event.date] = { marked: true };
     return obj;
   }, {});
+  //pedro
+  const [image, setImage] = useState(null);
+  const [uploading, setUploading] = useState(false);
+
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+    });
+
+    const source = {uri: result.uri};
+    console.log(source);
+    setImage(source);
+  };
+
+  const uploadImage = async () => {
+    setUploading(true);
+    const response = await fetch(image.uri)
+    const blob = await response.blob();
+    const filename = image.uri.substring(image.uri.lastIndexOf('/')+1);
+    var ref = firebase.storage().ref().child(filename).put(blob);
+
+    try {
+      await ref;
+    } catch (e) {
+      console.log(e);
+    }
+    setUploading(false);
+    Alert.alert(
+      'Foto carregada..!!'
+    );
+    setImage(null);
+  };
 
   return (
     <View style={styles.container}>
@@ -243,6 +266,23 @@ const CalendarScreen = () => {
             />
             </View>
             
+            <SafeAreaView style={styles.container}>
+        <TouchableOpacity style={styles.selectButton} onPress={pickImage}>
+          <Text style={styles.buttonText}>
+            Pick Video
+          </Text>
+        </TouchableOpacity>
+        <View style={styles.imageContainer}>
+          {image && <Image source={{uri: image.uri}} style={{ width:300, height:300}} />}
+          <TouchableOpacity style={styles.uploadButton} onPress={uploadImage}>
+            <Text style={styles.buttonText}>
+              Upload Video
+            </Text>
+          </TouchableOpacity>
+        </View>
+   </SafeAreaView>
+
+
             <View style={styles.buttonContainer}>
             <TouchableOpacity
            style={[styles.button, styles.cancelButton]}
@@ -250,7 +290,7 @@ const CalendarScreen = () => {
               >
              <Text style={styles.buttonText}>Cancelar</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.button, styles.canc]} onPress={onSaveEvent}>
+            <TouchableOpacity style={[styles.button, styles.saveButton]} onPress={onSaveEvent}>
           <Text style={styles.buttonText}>Guardar</Text>
           </TouchableOpacity>
           </View>
@@ -298,7 +338,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    
   },
   modalContainer: {
     flex: 1,
@@ -308,7 +347,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
   },
-  
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -345,7 +383,7 @@ const styles = StyleSheet.create({
     borderBottomColor: 'black',
     marginBottom: 10,
   },
-  
+
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -405,4 +443,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+
+  // pedro
+  selectButton: {
+    borderRadius:5,
+    width:150,
+    height:50,
+    backgroundColor:'blue',
+    alignItems:'center',
+    justifyContent:'center'
+  },
+
+  uploadButton: {
+    borderRadius:5,
+    width:150,
+    height:50,
+    backgroundColor:'red',
+    alignItems:'center',
+    justifyContent:'center'
+  },
+
+  imageContainer: {
+    marginTop:30,
+    marginBottom:50,
+    alignItems:'center'
+  }
 });
