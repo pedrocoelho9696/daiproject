@@ -6,6 +6,8 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import HomeScreen from './screens/HomeScreen';
 import LoginScreen from './screens/LoginScreen';
 import SigninScreen from './screens/SigninScreen';
+import QuizzScreen from './screens/QuizzScreen';
+import MenuAtleta from './screens/MenuAtleta';
 import { useState, useEffect } from 'react';
 import { auth } from 'firebase/auth';
 
@@ -19,7 +21,10 @@ export default function App() {
       <Stack.Navigator>
         <Stack.Screen options={{ headerShown: false }} name="Login" component={LoginScreen} />
         <Stack.Screen options={{ headerShown: false}} name="Signin" component={SigninScreen} />
+        <Stack.Screen options={{ headerShown: false }} name="MenuAtleta" component={MenuAtleta} />
         <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="Quizz" component={QuizzScreen} />
+        
       </Stack.Navigator>
     </NavigationContainer>
   );
