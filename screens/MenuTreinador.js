@@ -1,12 +1,10 @@
 import React, {useState, useEffect} from 'react'
 import {  KeyboardAvoidingView, StyleSheet, Text, TouchableOpacity, View, Image, Modal } from 'react-native'
 import { FontAwesome } from '@expo/vector-icons'
-import { auth } from '../firebase';
+import { auth, db } from '../firebase';
 import { useNavigation } from '@react-navigation/core'
 import { initializeApp, firebase } from "firebase/app";
-import { getFirestore, getDocs, collection } from "firebase/firestore";
-import { getAnalytics } from "firebase/analytics";
-import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+import { collection, addDoc, query, getDocs, onSnapshot, where} from 'firebase/firestore';
 import 'firebase/firestore';
 import "firebase/auth";
 
@@ -30,21 +28,41 @@ function MenuTreinador () {
     const [icon, setIcon] = useState('plus');
     const [user, setUser] = useState('');
     const [name, setName] = useState('');
+    const [userName, setUserName] = useState('');
 
-    const firestore = getFirestore();
+    
     const navigation = useNavigation();
    
 
-    useEffect(() => {     
+    useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((user) => {
           if (user) {
             setUser(user);
-          } else{
-            setUser(null);            
-          }
-        });
-        return unsubscribe;
+            fetchUserName(user.email);
+          } else {
+            setUser(null);
+            setUserName('');
+    }
+    })
+    return  unsubscribe();
     }, []);
+
+    const fetchUserName = async (email) => {
+        const usersRef = collection(db, 'users');
+        const q = query(usersRef, where('email', '==', email));
+        const querySnapshot = await getDocs(q);
+        if (!querySnapshot.empty) {
+          const userDoc = querySnapshot.docs[0];
+          const userData = userDoc.data();
+          setUserName(userData.name); 
+        }
+    }; 
+      
+      const terminarsessao = () => {
+        auth.signOut()
+            navigation.replace("Login")
+          };
+      
 
 
     const handleOpenModal = () => {
@@ -66,7 +84,7 @@ function MenuTreinador () {
     };
 
     const agenda = () => {
-        navigation.navigate("Home");
+        navigation.navigate("Calendario");
     };
 
     const relatorio = () => {
@@ -85,6 +103,8 @@ function MenuTreinador () {
         navigation.navigate("CriarRelatorio");
     };
     
+    
+
 
     return (
         <KeyboardAvoidingView style={styles.container} behavior="height"> 
@@ -109,7 +129,7 @@ function MenuTreinador () {
                                 style={{ color: '#ABABAB', width: 120, height: 30, position: 'absolute', top: 90, left: 20, fontSize: 20, fontWeight: 500 }}>ID: {user.uid}
                         </Text>
                         <Text
-                            style={{ color: 'black', width: 120, height: 120, position: 'absolute', top: 130, left: 20, fontSize: 20, fontWeight: 500 }}> Name
+                            style={{ color: 'black', width: 120, height: 120, position: 'absolute', top: 130, left: 20, fontSize: 20, fontWeight: 500 }}> {userName}
                         </Text> 
                         <TouchableOpacity onPress={() => setModalVisible(false)}>
                             <Image
@@ -162,7 +182,7 @@ function MenuTreinador () {
                                 style={{ color: 'black', width: 120, height: 120, position: 'absolute', top: 390, left: 90, fontSize: 20, fontWeight: 300}}>Perfil
                             </Text>
                         </TouchableOpacity>
-                        <TouchableOpacity>
+                        <TouchableOpacity onPress={terminarsessao}>
                             <Image
                                 source={require('../assets/Terminar.png')}
                                 style={{ width: 35, height: 35, position: 'absolute', top: 600, left: 40, backgroundColor: 'white'}}
@@ -188,7 +208,7 @@ function MenuTreinador () {
                 source={require('../assets/Pessoa.png')}
                 style={{ width: 120, height: 120, position: 'absolute', top: 130, left: 10 }} />
             <Text
-                style={{ color: 'black', width: 120, height: 120, position: 'absolute', top: 170, left: 120, fontSize: 20, fontWeight: 500 }}>Olá, X!
+                style={{ color: 'black', width: 120, height: 120, position: 'absolute', top: 170, left: 120, fontSize: 20, fontWeight: 500 }}>Olá, {userName}!
             </Text>
             <Text
                 style={{ color: 'grey', width: 120, height: 120, position: 'absolute', top: 250, left: 25, fontSize: 20, fontWeight: 400 }}>Tarefas

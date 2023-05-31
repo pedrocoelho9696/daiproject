@@ -2,27 +2,57 @@ import { useNavigation } from '@react-navigation/core'
 import { createUserWithEmailAndPassword } from 'firebase/auth'
 import React, { useEffect, useState } from 'react'
 import { KeyboardAvoidingView, StyleSheet, Text, TextInput, TouchableOpacity, View, Image } from 'react-native'
-import { auth } from '../firebase'
+import { auth, db } from '../firebase'
 import { signInWithEmailAndPassword } from 'firebase/auth';
+import { collection, addDoc, query, getDocs, onSnapshot, where} from 'firebase/firestore';
 
 
 const LoginScreen = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [role, setRole] = useState('')
+  const [user, setUser] = useState('');
 
   const navigation = useNavigation()
 
 
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(user =>{
-      if (user) {
-        navigation.replace("MenuAtleta")
+  const fetchRole = async (email) => {
+    try {
+      const usersRef = collection(db, 'users');
+      const q = query(usersRef, where('email', '==', email));
+      const querySnapshot = await getDocs(q);
+      if (!querySnapshot.empty) {
+        const userDoc = querySnapshot.docs[0];
+        const userData = userDoc.data();
+        setRole(userData.role);
       }
-    })
-    return unsubscribe
-  }, [])
+    } catch (error) {
+      console.log('Error retrieving user:', error);
+    }
+  };
+  
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        setUser(user);
+        fetchRole(user.email);
+      } else {
+        // Handle the case when the user is not logged in
+      }
+    });
+    return unsubscribe;
+  }, []);
+  
+  useEffect(() => {
+    if (role === 'Equipa Técnica') {
+      navigation.replace('MenuTreinador');
+    } else if (role === 'Jogadora') {
+      navigation.replace('MenuAtleta');
+    }
+  }, [role]);
 
-const handleLogin = () => {
+
+  const handleLogin = () => {
     signInWithEmailAndPassword(auth, email, password)
     .then(userCredentials => {
       const user = userCredentials.user;

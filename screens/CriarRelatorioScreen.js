@@ -21,31 +21,21 @@ function CriarRelatorioScreen() {
   const navigation = useNavigation();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        setUser(user);
-        try {
-          const usersCollectionRef = collection(db, 'users');
-          const q = query(usersCollectionRef, where('userId', '==', user.uid));
-          const querySnapshot = await getDocs(q);
-          if (!querySnapshot.empty()) {
-            querySnapshot.forEach((doc) => {
-              const userData = doc.data();
-              console.log('User Name:', userData.name);
-            });
-          } else {
-            console.log('User document not found.');
-          }
-        } catch (error) {
-          console.error('Error getting user:', error);
-        }
-      } else {
-        setUser(null);
-      }
+    const unsubscribe = onSnapshot(collection(db, 'reports'), (snapshot) => {
+      const reportList = [];
+      snapshot.forEach((doc) => {
+        const reportData = doc.data();
+        const report = {
+          id: doc.id,
+          ...reportData,
+        };
+        reportList.push(report);
+      });
+      setReports(reportList);
     });
+  
     return unsubscribe;
   }, []);
-
 
   const handleOpenModal = () => {
     setIsModalVisible(true);

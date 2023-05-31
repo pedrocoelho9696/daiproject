@@ -39,14 +39,28 @@ const SigninScreen = () => {
     setModalVisible(false);
   };
 
-  useEffect(() => {
+ /* useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(user =>{
       if (user) {
-        navigation.replace("MenuAtleta")
+        if (role === "Equipa Técnica"){
+          navigation.replace("MenuTreinador");
+        }
+        else{
+          navigation.replace("MenuAtleta");
+        }
+       
       }
     })
     return unsubscribe
-  }, [])
+  }, []) */ 
+
+  const menutreinador = () => {
+    navigation.replace("MenuTreinador");
+  }
+
+  const menuatleta = () => {
+    navigation.replace("MenuAtleta");
+  }
 
   const handleSignUpA = async () => {
     createUserWithEmailAndPassword(auth, email, password)
@@ -57,7 +71,7 @@ const SigninScreen = () => {
           name,
           password,
           email,
-          role,
+          role: "Atleta",
           dia,
           mes,
           ano,

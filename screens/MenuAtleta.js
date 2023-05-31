@@ -1,10 +1,11 @@
 import React, {useState, useEffect} from 'react'
 import {  KeyboardAvoidingView, StyleSheet, Text, TouchableOpacity, View, Image, Modal } from 'react-native'
 import { FontAwesome } from '@expo/vector-icons'
-import { getAuth, onAuthStateChanged, auth, db } from '../firebase';
+import { getAuth, auth, db } from '../firebase';
 import { useNavigation } from '@react-navigation/core'
 import { initializeApp, firebase } from "firebase/app";
 import { collection, addDoc, query, getDocs, onSnapshot, where} from 'firebase/firestore';
+import { signOut } from 'firebase/auth';
 
 
 function MenuAtleta () {
@@ -14,7 +15,7 @@ function MenuAtleta () {
     const [icon, setIcon] = useState('plus');
     const [user, setUser] = useState('');
     const [userName, setUserName] = useState('');
-
+    
     
     const navigation = useNavigation();
    
@@ -27,9 +28,9 @@ function MenuAtleta () {
           } else {
             setUser(null);
             setUserName('');
-          }
-        })
-        return unsubscribe;
+    }
+    })
+    return  unsubscribe();
     }, []);
 
     const fetchUserName = async (email) => {
@@ -41,7 +42,7 @@ function MenuAtleta () {
           const userData = userDoc.data();
           setUserName(userData.name); 
         }
-    };
+    }; 
 
 
     const handleOpenModal = () => {
@@ -63,7 +64,7 @@ function MenuAtleta () {
     };
 
     const agenda = () => {
-        navigation.navigate("Home");
+        navigation.navigate("Calendario");
     };
 
     const relatorio = () => {
@@ -74,7 +75,10 @@ function MenuAtleta () {
         navigation.navigate("PerfilJogador");
     };
 
-    
+    const terminarsessao = () => {
+        auth.signOut()
+            navigation.replace("Login")
+          };
     
     return (
         <KeyboardAvoidingView style={styles.container} behavior="height"> 
@@ -183,7 +187,7 @@ function MenuAtleta () {
                                 style={{ color: 'black', width: 120, height: 120, position: 'absolute', top: 340, left: 90, fontSize: 20, fontWeight: 300}}>Perfil
                             </Text>
                         </TouchableOpacity>
-                        <TouchableOpacity onPress>
+                        <TouchableOpacity onPress={terminarsessao}>
                             <Image
                                 source={require('../assets/Terminar.png')}
                                 style={{ width: 35, height: 35, position: 'absolute', top: 600, left: 40, backgroundColor: 'white'}}

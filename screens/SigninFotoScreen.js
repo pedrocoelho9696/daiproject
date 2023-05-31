@@ -1,14 +1,58 @@
-import { useNavigation } from '@react-navigation/core';
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { KeyboardAvoidingView, StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { uploadImageToFirebase } from '../firebase'; // Assuming you have a function to upload the image to Firebase.
-
+import { getAuth, auth, db } from '../firebase';
+import { useNavigation } from '@react-navigation/core'
+import { initializeApp, firebase } from "firebase/app";
+import { collection, addDoc, query, getDocs, onSnapshot, where} from 'firebase/firestore';
 
 
 const SigninFotoScreen = () => {
   const [selectedImage, setSelectedImage] = useState(null);
+  const [role, setRole] = useState(null);
+  const [user, setUser] = useState('');
   const navigation = useNavigation()
+
+
+  const fetchRole = async (email) => {
+    try {
+      const usersRef = collection(db, 'users');
+      const q = query(usersRef, where('email', '==', email));
+      const querySnapshot = await getDocs(q);
+      if (!querySnapshot.empty) {
+        const userDoc = querySnapshot.docs[0];
+        const userData = userDoc.data();
+        setRole(userData.role);
+      }
+    } catch (error) {
+      console.log('Error retrieving user:', error);
+    }
+  };
+  
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        setUser(user);
+        fetchRole(user.email);
+      } else {
+        // Handle the case when the user is not logged in
+      }
+    });
+    return unsubscribe;
+  }, []);
+  
+  const handleMenu = () => {
+    
+      if (role === 'Equipa Técnica') {
+        navigation.replace('MenuTreinador');
+      } else if (role === 'Atleta') {
+        navigation.replace('MenuAtleta');
+      }
+    
+  }
+  
 
   const handleImageSelection = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -48,7 +92,7 @@ const SigninFotoScreen = () => {
 
 
       <TouchableOpacity
-       onPress={() => navigation.navigate('MenuAtleta')}
+      onPress={handleMenu}
         style={styles.button}
         
       >
