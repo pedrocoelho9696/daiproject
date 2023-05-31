@@ -1,23 +1,24 @@
 import React, {useState, useEffect} from 'react'
 import {  KeyboardAvoidingView, StyleSheet, Text, TouchableOpacity, View, Image, Modal } from 'react-native'
 import { FontAwesome } from '@expo/vector-icons'
-import { getAuth, onAuthStateChanged, auth, db } from '../firebase';
+import { auth } from '../firebase';
 import { useNavigation } from '@react-navigation/core'
-import { initializeApp, firebase } from "firebase/app";
 import { collection, addDoc, query, getDocs, onSnapshot, where} from 'firebase/firestore';
+import { db } from '../firebase';
 
 
-function MenuAtleta () {
-    
+function Perfil () {
     const [modalVisible, setModalVisible] = useState(false);
     const [isModalVisible, setIsModalVisible] = useState(false);
-    const [icon, setIcon] = useState('plus');
+    const [icon, setIcon] = useState('plus');   
     const [user, setUser] = useState('');
     const [userName, setUserName] = useState('');
-
+    const [userPosicao, setUserPosicao] = useState('');
+    const [userEscalao, setUserEscalao] = useState('');
+    const [userPeso, setUserPeso] = useState('');
+    const [userAltura, setUserAltura] = useState('');
     
     const navigation = useNavigation();
-   
 
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -27,6 +28,10 @@ function MenuAtleta () {
           } else {
             setUser(null);
             setUserName('');
+            setUserPosicao('');
+            setUserEscalao('');
+            setUserPeso('');
+            setUserAltura('');
           }
         })
         return unsubscribe;
@@ -39,27 +44,30 @@ function MenuAtleta () {
         if (!querySnapshot.empty) {
           const userDoc = querySnapshot.docs[0];
           const userData = userDoc.data();
-          setUserName(userData.name); 
+          setUserName(userData.name);
+          setUserAltura(userData.altura);
+          setUserEscalao(userData.esc);
+          setUserPeso(userData.peso);
+          setUserPosicao(userData.pos);   
         }
     };
 
-
+    const openModal = () => {
+        setModalVisible(true);
+    };
+    
+    const closeModal = () => {
+        setModalVisible(false);
+    }; 
+    
     const handleOpenModal = () => {
         setIsModalVisible(true);
         setIcon('minus');
     };
-
+    
     const handleCloseModal = () => {
         setIsModalVisible(false);
         setIcon('plus');
-    };
-    
-    const openModal = () => {
-        setModalVisible(true);
-    };
-
-    const closeModal = () => {
-        setModalVisible(false);
     };
 
     const agenda = () => {
@@ -70,15 +78,13 @@ function MenuAtleta () {
         navigation.navigate("Quizz");
     };
 
-    const PerfilJogador = () => {
-        navigation.navigate("PerfilJogador");
+    const voltar = () => {
+        navigation.navigate("MenuAtleta");
     };
 
-    
-    
-    return (
-        <KeyboardAvoidingView style={styles.container} behavior="height"> 
-            <View style={{ flex: 1 }}>
+    return(
+        <KeyboardAvoidingView style={styles.container} behavior="height">
+        <View style={{ flex: 1 }}>
                 <TouchableOpacity onPress={openModal}>
                     <Image
                         source={require('../assets/3%20traços.png')}
@@ -127,7 +133,7 @@ function MenuAtleta () {
                                 source={require('../assets/guimaraes.png')}
                                 style={{ width: 50, height: 75, position: 'absolute', top: 50, right: 20 }} />
                             <Text
-                                style={{ color: '#ABABAB', width: 120, height: 30, position: 'absolute', top: 90, left: 20, fontSize: 20, fontWeight: 500 }}> ID: {user.uid}
+                                style={{ color: '#ABABAB', width: 120, height: 30, position: 'absolute', top: 90, left: 20, fontSize: 20, fontWeight: 500 }}>ID: {user.uid}
                         </Text>
                         <Text
                             style={{ color: 'black', width: 120, height: 120, position: 'absolute', top: 130, left: 20, fontSize: 20, fontWeight: 500 }}> {userName}
@@ -174,7 +180,7 @@ function MenuAtleta () {
                                 style={{ color: 'black', width: 120, height: 120, position: 'absolute', top: 288, left: 80, fontSize: 20, fontWeight: 300}}>Definições
                             </Text>
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={PerfilJogador}>
+                        <TouchableOpacity onPress={handleCloseModal}>
                             <Image
                                 source={require('../assets/Pessoa.png')}
                                 style={{ width: 80, height: 40, position: 'absolute', top: 330, left: 15, backgroundColor: 'white'}}
@@ -183,54 +189,95 @@ function MenuAtleta () {
                                 style={{ color: 'black', width: 120, height: 120, position: 'absolute', top: 340, left: 90, fontSize: 20, fontWeight: 300}}>Perfil
                             </Text>
                         </TouchableOpacity>
-                        <TouchableOpacity onPress>
+                        <TouchableOpacity onPress={voltar}>
                             <Image
                                 source={require('../assets/Terminar.png')}
                                 style={{ width: 35, height: 35, position: 'absolute', top: 600, left: 40, backgroundColor: 'white'}}
                             />
                             <Text
-                                style={{ color: 'black', width: 190, height: 100, position: 'absolute', top: 600, left: 85, fontSize: 20, fontWeight: 300}}>Terminar Sessão
+                                style={{ color: 'black', width: 190, height: 100, position: 'absolute', top: 600, left: 85, fontSize: 20, fontWeight: 300}}>Voltar
                             </Text>
                         </TouchableOpacity>
                         </View>
                     </TouchableOpacity>
                 </Modal>
             </View>
-            <Image
-                source={require('../assets/BolaDeVolei.png')}
-                style={{ width: 50, height: 50, position: 'absolute', top: 70, right: 60 }} />
-            <Image
-                source={require('../assets/VoleiSC.png')}
-                style={{ width: 209, height: 24, position: 'absolute', top: 90, left: 70 }} />
-            <Image
-                source={require('../assets/Linha.png')}
-                style={{ width: 420, height: 2, position: 'absolute', top: 130, right: 0 }} />
-            <Image
-                source={require('../assets/Pessoa.png')}
-                style={{ width: 120, height: 120, position: 'absolute', top: 130, left: 10 }} />
-            <Text
-                style={{ color: 'black', width: 120, height: 120, position: 'absolute', top: 170, left: 120, fontSize: 20, fontWeight: 500 }}>Olá, {userName}!
-            </Text>
-            <Image
-                source={require('../assets/Tarefas.png')}
-                style={{ width: 115, height: 22, position: 'absolute', top: 260, left: 40 }} />
-            <Image
-                source={require('../assets/LinhaAmarela.png')}
-                style={{ width: 420, height: 40, position: 'absolute', top: 300, right: 0 }} />
-            <Image
-                source={require('../assets/LinhaPreta.png')}
-                style={{ width: 420, height: 400, position: 'absolute', top: 340, right: 0 }} />
-            <Image
-                source={require('../assets/LinhaAmarela.png')}
-                style={{ width: 420, height: 40, position: 'absolute', top: 450, right: 0 }} />
-            <Image
-                source={require('../assets/LinhaAmarela.png')}
-                style={{ width: 420, height: 40, position: 'absolute', top: 590, right: 0 }} />
-        </KeyboardAvoidingView>
-    )
-  }
+            <View>
+                <Image
+                    source={require('../assets/BolaDeVolei.png')}
+                    style={{ width: 50, height: 50, position: 'absolute', top: 70, right: 50 }} />
+                <Image
+                    source={require('../assets/VoleiSC.png')}
+                    style={{ width: 209, height: 24, position: 'absolute', top: 90, left: 70 }} />
+                <Image
+                    source={require('../assets/Linha.png')}
+                    style={{ width: 420, height: 2, position: 'absolute', top: 130, right: 0 }} />
+                <Image
+                    source={require('../assets/Retangulo.png')}
+                    style={{ width: 140, height: 97, position: 'absolute', top: 170, left: 25 }} />
+                <Text
+                    style={{ color: 'black', width: 230, height: 200, position: 'absolute', top: 180, left: 180, fontSize: 20, fontWeight: 600}}> {userName}
+                </Text>
+                <Image
+                    source={require('../assets/RetanguloPreto.png')}
+                    style={{ width: 100, height: 32, position: 'absolute', top: 290, right: 35 }} />
+                <Text
+                    style={{ color: 'white', width: 230, height: 200, position: 'absolute', top: 290, right: -117, fontSize: 20, fontWeight: 400}}>Editar
+                </Text>    
+                <Image
+                    source={require('../assets/BarraCinzenta.png')}
+                    style={{ width: 720, height: 39, position: 'absolute', top: 335, right: 0 }} />
+                <Image
+                    source={require('../assets/LinhaPreta.png')}
+                    style={{ width: 720, height: 350, position: 'absolute', top: 375, right: 0 }} />  
+                <Image
+                    source={require('../assets/Linha.png')}
+                    style={{ width: 420, height: 2, position: 'absolute', top: 375, right: 0 }} />
+                <Image
+                    source={require('../assets/Linha.png')}
+                    style={{ width: 420, height: 2, position: 'absolute', top: 435, right: 0 }} />      
+                <Image
+                    source={require('../assets/Linha.png')}
+                    style={{ width: 420, height: 2, position: 'absolute', top: 495, right: 0 }} />
+                <Image
+                    source={require('../assets/Linha.png')}
+                    style={{ width: 420, height: 2, position: 'absolute', top: 555, right: 0 }} />
+                <Image
+                    source={require('../assets/Linha.png')}
+                    style={{ width: 420, height: 2, position: 'absolute', top: 615, right: 0 }} />
+                <Image
+                    source={require('../assets/Linha.png')}
+                    style={{ width: 420, height: 2, position: 'absolute', top: 675, right: 0 }} />
+                <Text
+                    style={{ color: 'black', width: 60, height: 450, position: 'absolute', top: 340, right: 170, fontSize: 23, fontWeight: 500}}>Perfil
+                </Text>
+                <Text
+                    style={{ color: 'white', width: 290, height: 200, position: 'absolute', top: 395, right: 90, fontSize: 20, fontWeight: 400}}>Email: {user.email}
+                </Text>
+                <Text
+                    style={{ color: 'white', width: 290, height: 200, position: 'absolute', top: 450, right: 90, fontSize: 20, fontWeight: 400}}>Palavra-Passe: ********
+                </Text>
+                <Text
+                    style={{ color: 'white', width: 290, height: 200, position: 'absolute', top: 510, right: 90, fontSize: 20, fontWeight: 400}}>Escalão: {userEscalao}
+                </Text>
+                <Text
+                    style={{ color: 'white', width: 290, height: 200, position: 'absolute', top: 570, right: 90, fontSize: 20, fontWeight: 400}}>Posição: {userPosicao}
+                </Text>
+                <Text
+                    style={{ color: 'white', width: 290, height: 200, position: 'absolute', top: 630, right: 90, fontSize: 20, fontWeight: 400}}>Peso: {userPeso}
+                </Text>
+                <Text
+                    style={{ color: 'white', width: 290, height: 200, position: 'absolute', top: 685, right: 90, fontSize: 20, fontWeight: 400}}>Altura: {userAltura}
+                </Text>                 
 
-  export default MenuAtleta;
+            </View>
+
+
+        </KeyboardAvoidingView>    
+    )
+}
+
+  export default Perfil;
 
 const styles = StyleSheet.create({
     icon: {

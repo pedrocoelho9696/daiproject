@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView, Alert } from 'react-native'
-import React, {useState} from 'react'
+import React, {useState, useEffect} from 'react'
 import { auth } from '../firebase'
 import { useNavigation } from '@react-navigation/core'
 import { getAuth, signOut } from 'firebase/auth'
@@ -9,6 +9,10 @@ import 'moment/locale/pt-br';
 import { Modal, TextInput, Button, Image} from 'react-native';
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import * as ImagePicker from 'expo-image-picker';
+import { db } from '../firebase';
+import { collection, addDoc, onSnapshot, getDocs } from 'firebase/firestore';
+
+
 
 
 moment.locale('pt-br');
@@ -53,7 +57,8 @@ LocaleConfig.defaultLocale = 'pt';
 
 const CalendarScreen = () => {
   const [selectedDate, setSelectedDate] = useState('');
-  const [selectedTime, setSelectedTime] = useState('');
+  const [selectedStartTime, setSelectedStartTime] = useState('');
+  const [selectedEndTime, setSelectedEndTime] = useState('');
   const [eventName, setEventName] = useState('');
   const [eventPlace, setEventPlace] = useState('');
   const [eventList, setEventList] = useState([]);
@@ -71,9 +76,11 @@ const CalendarScreen = () => {
   const hideStartTimePicker = () => setStartTimePickerVisibility(false);
   
   const handleStartTimeConfirm = (date) => {
-    setSelectedStartDate(date);
+    const selectedTime = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    setSelectedStartTime(selectedTime);
+    setSelectedStartDate(selectedTime);
     hideStartTimePicker();
-    setSelectedEndDate(date);
+    setSelectedEndDate(selectedTime);
   };
 
   const showEndTimePicker = () =>setEndTimePickerVisibility(true);
@@ -83,33 +90,63 @@ const CalendarScreen = () => {
   
 
   const handleEndTimeConfirm = (date) => {
-    setSelectedEndDate(date);
+    const selectedTime = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    setSelectedEndTime(selectedTime)
+    setSelectedEndDate(selectedEndTime);
     hideEndTimePicker();
   };
-
   const onDayPress = (day) => {
     setSelectedDate(day.dateString);
     setIsCreating(true);
     setModalVisible(true);
     setEventName('');
     setEventPlace('');
-    
   };
+
+  const onButtonPress = () => {
+  setIsCreating(true);
+  setModalVisible(true);
+  setEventName('');
+  setEventPlace('');
+  setSelectedStartDate('');
+  setSelectedEndDate('');
+  setSelectedStartTime('');
+  setSelectedDate('');
+  setSelectedStartTime('');
+};
+  
   const onSaveEvent = () => {
+    
     const newEvent = {
       date: selectedDate,
-      name: eventName,
-      place: eventPlace,
+      eventName: eventName,
+      eventPlace: eventPlace,
+      startTime: selectedStartTime,
+      endTime: selectedEndTime,
     };
+
+    try {
+      // Save the new report to Firestore
+      const docRef =  addDoc(collection(db, 'eventos'), newEvent);
+      console.log('Report added with ID: ', docRef.id);
+  
+      // Clear the input field
+  
+    } catch (error) {
+      console.error('Error adding report: ', error);
+    }
+
+
     setEventList([...eventList, newEvent]);
     setEventName('');
     setEventPlace('');
-    setSelectedTime('');
+    setSelectedStartTime('');
     setSelectedDate('');
     setSelectedEndDate('');
     setSelectedStartDate('');
     setModalVisible(false);
     setEditingEvent(null); 
+
   };
   const onEditEvent = () => {
     const updatedEventList = eventList.map((event) => {
@@ -138,15 +175,52 @@ const CalendarScreen = () => {
     setEditModalVisible(true);
   };
 
-  const markedDates = eventList.reduce((obj, event) => {
+  // buscar calendarios na base de dados
+ const markedDates = eventList.reduce((obj, event) => {
     obj[event.date] = { marked: true };
     return obj;
   }, {});
+  const [markedDates2, setMarkedDates2] = useState({});
+  
+ /* const fetchEvents = async () => {
+  try {
+    const querySnapshot = await getDocs(collection(db, 'eventos'));
+    const updatedMarkedDates = { ...markedDates };
+
+    querySnapshot.forEach((doc) => {
+      const event = doc.data();
+      const eventDate = new Date(event.date);
+
+      // Check if eventDate is a valid date
+      if (!isNaN(eventDate.getTime())) {
+        // Convert eventDate to a string in the format 'YYYY-MM-DD'
+        const formattedDate = eventDate.toISOString().split('T')[0];
+
+        // Add the event to the markedDates object if it doesn't exist already
+        if (!updatedMarkedDates[formattedDate]) {
+          updatedMarkedDates[formattedDate] = { marked: true };
+        }
+      } else {
+        console.error('Invalid date for event:', event);
+      }
+    });
+
+    // Update the markedDates object
+    setMarkedDates(updatedMarkedDates);
+  } catch (error) {
+    console.error('Error fetching events:', error);
+  }
+};
+
+useEffect(() => {
+  fetchEvents();
+}, []); */
+
   //pedro
   const [image, setImage] = useState(null);
   const [uploading, setUploading] = useState(false);
 
-  const pickImage = async () => {
+ /* const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Videos,
     });
@@ -173,7 +247,7 @@ const CalendarScreen = () => {
       'Foto carregada..!!'
     );
     setImage(null);
-  };
+  }; */
 
   return (
     <View style={styles.container}>
@@ -202,8 +276,7 @@ const CalendarScreen = () => {
                 </View>
               
               <View style={styles.buttonContainer}>
-                <TouchableOpacity
-                style={[styles.button, styles.cancelButton]}
+                <TouchableOpacity style={[styles.button, styles.cancelButton]}
                 onPress={() => setEditingEvent(null)}
                 >
                 <Text style={styles.buttonText}>Cancelar</Text>
@@ -230,9 +303,10 @@ const CalendarScreen = () => {
           </TouchableOpacity>
             <DateTimePickerModal
              isVisible={isStartTimePickerVisible}
-             mode="datetime"
+             mode="time"
              onConfirm={handleStartTimeConfirm}
              onCancel={hideStartTimePicker}
+             format="HH:mm"
       />
 
           <TouchableOpacity onPress={showEndTimePicker}>
@@ -265,23 +339,19 @@ const CalendarScreen = () => {
             style={styles.leftIcon}
             />
             </View>
-            
-            <SafeAreaView style={styles.container}>
-        <TouchableOpacity style={styles.selectButton} onPress={pickImage}>
-          <Text style={styles.buttonText}>
-            Pick Video
-          </Text>
-        </TouchableOpacity>
-        <View style={styles.imageContainer}>
-          {image && <Image source={{uri: image.uri}} style={{ width:300, height:300}} />}
-          <TouchableOpacity style={styles.uploadButton} onPress={uploadImage}>
-            <Text style={styles.buttonText}>
-              Upload Video
-            </Text>
-          </TouchableOpacity>
-        </View>
-   </SafeAreaView>
 
+           <View style={styles.inputContainer}>
+           <TouchableOpacity>
+        
+           <Text style={{color: 'black',
+                  fontSize: 16,
+                  fontWeight: 'bold'}}>Guardar</Text>
+        
+      </TouchableOpacity>
+      
+
+            </View>
+           
 
             <View style={styles.buttonContainer}>
             <TouchableOpacity
@@ -315,7 +385,7 @@ const CalendarScreen = () => {
         <View style={styles.calendarContainer}>
         <Calendar markedDates={markedDates} onDayPress={onDayPress} />
         {!modalVisible && (
-          <TouchableOpacity onPress={() => setModalVisible(true)} style={[styles.buttonEvent, styles.eventButton]}>
+          <TouchableOpacity onPress={() => onButtonPress} style={[styles.buttonEvent, styles.eventButton]}>
             <Text style={styles.buttonTextEvent}>+</Text>
           </TouchableOpacity>
         )}
@@ -333,6 +403,23 @@ const CalendarScreen = () => {
 
 export default CalendarScreen;
 
+/* 
+            <SafeAreaView style={styles.container}>
+        <TouchableOpacity style={styles.selectButton} onPress={pickImage}>
+          <Text style={styles.buttonText}>
+            Pick Video
+          </Text>
+        </TouchableOpacity>
+        <View style={styles.imageContainer}>
+          {image && <Image source={{uri: image.uri}} style={{ width:300, height:300}} />}
+          <TouchableOpacity style={styles.uploadButton} onPress={uploadImage}>
+            <Text style={styles.buttonText}>
+              Upload Video
+            </Text>
+          </TouchableOpacity>
+        </View>
+   </SafeAreaView>
+ */
 
 const styles = StyleSheet.create({
   container: {

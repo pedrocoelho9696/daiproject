@@ -1,47 +1,50 @@
 import React, {useState, useEffect} from 'react'
 import {  KeyboardAvoidingView, StyleSheet, Text, TouchableOpacity, View, Image, Modal } from 'react-native'
 import { FontAwesome } from '@expo/vector-icons'
-import { getAuth, onAuthStateChanged, auth, db } from '../firebase';
+import { auth } from '../firebase';
 import { useNavigation } from '@react-navigation/core'
 import { initializeApp, firebase } from "firebase/app";
-import { collection, addDoc, query, getDocs, onSnapshot, where} from 'firebase/firestore';
+import { getFirestore, getDocs, collection } from "firebase/firestore";
+import { getAnalytics } from "firebase/analytics";
+import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+import 'firebase/firestore';
+import "firebase/auth";
 
+const firebaseConfig = {
+    // Your Firebase configuration object goes here
+    apiKey: "AIzaSyD2IjBIpJ5P42Wlj019I4MOOT7hL6BqVVM",
+    authDomain: "projetodai-73129.firebaseapp.com",
+    projectId: "projetodai-73129",
+    storageBucket: "projetodai-73129.appspot.com",
+    messagingSenderId: "567881372928",
+    appId: "1:567881372928:web:482112f08dc25814428fe5",
+    measurementId: "G-4B95SDGKKE"
+};
 
-function MenuAtleta () {
+initializeApp(firebaseConfig);
+
+function MenuTreinador () {
     
     const [modalVisible, setModalVisible] = useState(false);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [icon, setIcon] = useState('plus');
     const [user, setUser] = useState('');
-    const [userName, setUserName] = useState('');
+    const [name, setName] = useState('');
 
-    
+    const firestore = getFirestore();
     const navigation = useNavigation();
    
 
-    useEffect(() => {
+    useEffect(() => {     
         const unsubscribe = auth.onAuthStateChanged((user) => {
           if (user) {
             setUser(user);
-            fetchUserName(user.email);
-          } else {
-            setUser(null);
-            setUserName('');
-          }
-        })
+          } else{
+            setUser(null);            
+          }
+        });
         return unsubscribe;
     }, []);
-
-    const fetchUserName = async (email) => {
-        const usersRef = collection(db, 'users');
-        const q = query(usersRef, where('email', '==', email));
-        const querySnapshot = await getDocs(q);
-        if (!querySnapshot.empty) {
-          const userDoc = querySnapshot.docs[0];
-          const userData = userDoc.data();
-          setUserName(userData.name); 
-        }
-    };
 
 
     const handleOpenModal = () => {
@@ -70,12 +73,19 @@ function MenuAtleta () {
         navigation.navigate("Quizz");
     };
 
-    const PerfilJogador = () => {
-        navigation.navigate("PerfilJogador");
+    const PerfilTreinador = () => {
+        navigation.navigate("PerfilTreinador");
     };
 
+    const MenuTreinador = () => {
+        navigation.navigate("MenuTreinador");
+    };
+
+    const CriarRelatorio = () => {
+        navigation.navigate("CriarRelatorio");
+    };
     
-    
+
     return (
         <KeyboardAvoidingView style={styles.container} behavior="height"> 
             <View style={{ flex: 1 }}>
@@ -91,46 +101,15 @@ function MenuAtleta () {
                         onPress={closeModal}
                         activeOpacity={1}
                     >
-                    <View style={{backgroundColor: 'white', width: 240, height: 800, position: 'absolute', top: 40, left: 0  }}>
-                        <TouchableOpacity onPress={handleOpenModal}>
-                            <FontAwesome name={icon} size={20} color="black" style={styles.icon} />
-                        </TouchableOpacity>
-                        <Modal
-                            animationType="fade"
-                            transparent={true}
-                            visible={isModalVisible}
-                            onRequestClose={handleCloseModal}>
-                            <TouchableOpacity
-                                style={{ flex: 1 }}
-                                onPress={handleCloseModal}
-                                activeOpacity={1}
-                            >                                                          
-                                    <TouchableOpacity onPress={() => console.log('Botão 2 pressionado')}>
-                                        <Text
-                                            style={{ color: 'black', width: 130, height: 70, position: 'absolute', top: 480, left: 75, fontSize: 18}}>Questionários
-                                        </Text>
-                                    </TouchableOpacity>
-                                    
-                                    <TouchableOpacity onPress={() => console.log('Botão 2 pressionado')}>
-                                        <Text
-                                            style={{ color: 'black', width: 130, height: 70, position: 'absolute', top: 510, left: 75, fontSize: 18}}>Relatórios
-                                        </Text>
-                                    </TouchableOpacity>
-                                    
-                                    <TouchableOpacity onPress={handleCloseModal}>
-                                        <FontAwesome name="close" size={30} color="black" style={styles.icon2}/>
-                                    </TouchableOpacity>
-                                    
-                                    </TouchableOpacity> 
-                                </Modal>  
+                    <View style={{backgroundColor: 'white', width: 240, height: 800, position: 'absolute', top: 40, left: 0  }}> 
                             <Image
                                 source={require('../assets/guimaraes.png')}
                                 style={{ width: 50, height: 75, position: 'absolute', top: 50, right: 20 }} />
                             <Text
-                                style={{ color: '#ABABAB', width: 120, height: 30, position: 'absolute', top: 90, left: 20, fontSize: 20, fontWeight: 500 }}> ID: {user.uid}
+                                style={{ color: '#ABABAB', width: 120, height: 30, position: 'absolute', top: 90, left: 20, fontSize: 20, fontWeight: 500 }}>ID: {user.uid}
                         </Text>
                         <Text
-                            style={{ color: 'black', width: 120, height: 120, position: 'absolute', top: 130, left: 20, fontSize: 20, fontWeight: 500 }}> {userName}
+                            style={{ color: 'black', width: 120, height: 120, position: 'absolute', top: 130, left: 20, fontSize: 20, fontWeight: 500 }}> Name
                         </Text> 
                         <TouchableOpacity onPress={() => setModalVisible(false)}>
                             <Image
@@ -149,14 +128,14 @@ function MenuAtleta () {
                         </TouchableOpacity>
                         <TouchableOpacity>
                             <Image
-                                source={require('../assets/Saude.png')}
-                                style={{ width: 35, height: 40, position: 'absolute', top: 390, left: 38, backgroundColor: 'white'}}
+                                source={require('../assets/Camisola7.png')}
+                                style={{ width: 35, height: 35, position: 'absolute', top: 290, left: 38, backgroundColor: 'white'}}
                             />
                             <Text
-                                style={{ color: 'black', width: 120, height: 120, position: 'absolute', top: 395, left: 90, fontSize: 20, fontWeight: 300}}>Saude
+                                style={{ color: 'black', width: 120, height: 120, position: 'absolute', top: 295, left: 90, fontSize: 20, fontWeight: 300}}>Plantel
                             </Text>
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={relatorio}>
+                        <TouchableOpacity onPress={CriarRelatorio}>
                             <Image
                                 source={require('../assets/Relatorio.png')}
                                 style={{ width: 25, height: 32, position: 'absolute', top: 240, left: 38, backgroundColor: 'white'}}
@@ -165,25 +144,25 @@ function MenuAtleta () {
                                 style={{ color: 'black', width: 120, height: 120, position: 'absolute', top: 242, left: 85, fontSize: 20, fontWeight: 300}}>Relatorio
                             </Text>
                         </TouchableOpacity>
-                        <TouchableOpacity>
+                        <TouchableOpacity onPress={PerfilTreinador}>
                             <Image
                                 source={require('../assets/Definicoes.png')}
-                                style={{ width: 25, height: 25, position: 'absolute', top: 290, left: 38, backgroundColor: 'white'}}
+                                style={{ width: 25, height: 25, position: 'absolute', top: 345, left: 38, backgroundColor: 'white'}}
                             />
                             <Text
-                                style={{ color: 'black', width: 120, height: 120, position: 'absolute', top: 288, left: 80, fontSize: 20, fontWeight: 300}}>Definições
+                                style={{ color: 'black', width: 120, height: 120, position: 'absolute', top: 343, left: 80, fontSize: 20, fontWeight: 300}}>Definições
                             </Text>
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={PerfilJogador}>
+                        <TouchableOpacity onPress={() => setModalVisible(false)}>
                             <Image
                                 source={require('../assets/Pessoa.png')}
-                                style={{ width: 80, height: 40, position: 'absolute', top: 330, left: 15, backgroundColor: 'white'}}
+                                style={{ width: 80, height: 40, position: 'absolute', top: 385, left: 15, backgroundColor: 'white'}}
                             />
                             <Text
-                                style={{ color: 'black', width: 120, height: 120, position: 'absolute', top: 340, left: 90, fontSize: 20, fontWeight: 300}}>Perfil
+                                style={{ color: 'black', width: 120, height: 120, position: 'absolute', top: 390, left: 90, fontSize: 20, fontWeight: 300}}>Perfil
                             </Text>
                         </TouchableOpacity>
-                        <TouchableOpacity onPress>
+                        <TouchableOpacity>
                             <Image
                                 source={require('../assets/Terminar.png')}
                                 style={{ width: 35, height: 35, position: 'absolute', top: 600, left: 40, backgroundColor: 'white'}}
@@ -209,28 +188,52 @@ function MenuAtleta () {
                 source={require('../assets/Pessoa.png')}
                 style={{ width: 120, height: 120, position: 'absolute', top: 130, left: 10 }} />
             <Text
-                style={{ color: 'black', width: 120, height: 120, position: 'absolute', top: 170, left: 120, fontSize: 20, fontWeight: 500 }}>Olá, {userName}!
+                style={{ color: 'black', width: 120, height: 120, position: 'absolute', top: 170, left: 120, fontSize: 20, fontWeight: 500 }}>Olá, X!
+            </Text>
+            <Text
+                style={{ color: 'grey', width: 120, height: 120, position: 'absolute', top: 250, left: 25, fontSize: 20, fontWeight: 400 }}>Tarefas
             </Text>
             <Image
-                source={require('../assets/Tarefas.png')}
-                style={{ width: 115, height: 22, position: 'absolute', top: 260, left: 40 }} />
-            <Image
-                source={require('../assets/LinhaAmarela.png')}
-                style={{ width: 420, height: 40, position: 'absolute', top: 300, right: 0 }} />
-            <Image
                 source={require('../assets/LinhaPreta.png')}
-                style={{ width: 420, height: 400, position: 'absolute', top: 340, right: 0 }} />
+                style={{ width: 420, height: 510, position: 'absolute', top: 280, right: 0 }} />
             <Image
-                source={require('../assets/LinhaAmarela.png')}
-                style={{ width: 420, height: 40, position: 'absolute', top: 450, right: 0 }} />
-            <Image
-                source={require('../assets/LinhaAmarela.png')}
-                style={{ width: 420, height: 40, position: 'absolute', top: 590, right: 0 }} />
+                source={require('../assets/BarraCinzenta.png')}
+                style={{ width: 420, height: 40, position: 'absolute', top: 540, right: 0 }} />
+            <Text
+                style={{ color: 'white', width: 120, height: 120, position: 'absolute', top: 320, left: 25, fontSize: 17, fontWeight: 300 }}>Escalão: 
+            </Text>
+            <Text
+                style={{ color: 'white', width: 170, height: 120, position: 'absolute', top: 345, left: 25, fontSize: 17, fontWeight: 300 }}>Atletas Inscritos: 
+            </Text>
+            <Text
+                style={{ color: 'white', width: 170, height: 120, position: 'absolute', top: 372, left: 25, fontSize: 17, fontWeight: 300 }}>Estatísticas principais: 
+            </Text>
+            <Text
+                style={{ color: 'white', width: 220, height: 120, position: 'absolute', top: 410, left: 60, fontSize: 17, fontWeight: 300 }}>Numero de jogos realizados: 
+            </Text>
+            <Text
+                style={{ color: 'white', width: 420, height: 200, position: 'absolute', top: 450, left: 60, fontSize: 50, fontWeight: 400 }}>5 V 
+            </Text>
+            <Text
+                style={{ color: 'white', width: 420, height: 200, position: 'absolute', top: 450, left: 220, fontSize: 50, fontWeight: 400 }}>3 D 
+            </Text>
+            <Text
+                style={{ color: 'white', width: 220, height: 120, position: 'absolute', top: 590, left: 25, fontSize: 19, fontWeight: 400 }}>Tipo de treino 
+            </Text>
+            <Text
+                style={{ color: 'white', width: 220, height: 120, position: 'absolute', top: 615, left: 25, fontSize: 19, fontWeight: 400 }}>Local: 
+            </Text>
+            <Text
+                style={{ color: 'white', width: 220, height: 120, position: 'absolute', top: 640, left: 25, fontSize: 19, fontWeight: 400 }}>Horário: 
+            </Text>
+            <Text
+                style={{ color: 'black', width: 220, height: 120, position: 'absolute', top: 545, left: 15, fontSize: 22, fontWeight: 700 }}>Data 
+            </Text>            
         </KeyboardAvoidingView>
     )
   }
 
-  export default MenuAtleta;
+  export default MenuTreinador;
 
 const styles = StyleSheet.create({
     icon: {

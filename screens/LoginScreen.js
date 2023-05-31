@@ -1,8 +1,10 @@
 import { useNavigation } from '@react-navigation/core'
-import {signInWithEmailAndPassword } from 'firebase/auth'
+import { createUserWithEmailAndPassword } from 'firebase/auth'
 import React, { useEffect, useState } from 'react'
-import {  KeyboardAvoidingView, StyleSheet, Text, TextInput, TouchableOpacity, View, Image } from 'react-native'
+import { KeyboardAvoidingView, StyleSheet, Text, TextInput, TouchableOpacity, View, Image } from 'react-native'
 import { auth } from '../firebase'
+import { signInWithEmailAndPassword } from 'firebase/auth';
+
 
 const LoginScreen = () => {
   const [email, setEmail] = useState('')
@@ -11,31 +13,42 @@ const LoginScreen = () => {
   const navigation = useNavigation()
 
 
-    useEffect(() => {
-      const unsubscribe = auth.onAuthStateChanged(user =>{
-        if (user) {
-          navigation.replace("MenuAtleta")
-        }
-      })
-      return unsubscribe
-    }, [])
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(user =>{
+      if (user) {
+        navigation.replace("MenuAtleta")
+      }
+    })
+    return unsubscribe
+  }, [])
 
-  const handleLogin = () => {
-      signInWithEmailAndPassword(auth, email, password)
-      .then(userCredentials => {
-        const user = userCredentials.user;
-        console.log('Logged with: ', user.email);
-      })
-      .catch(error => alert(error.message))
-  }
+const handleLogin = () => {
+    signInWithEmailAndPassword(auth, email, password)
+    .then(userCredentials => {
+      const user = userCredentials.user;
+      console.log('Logged with: ', user.email);
+    })
+    .catch(error => alert(error.message))
+}
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior= 'height'
-    >
+      <KeyboardAvoidingView style={styles.container} behavior='height'>
+        <View style={styles.headerContainer}>
+          <View style={styles.titleContainer}>
+          <Image source={require('../assets/Logo.png')} style={styles.secondImage} />
+            <Text style={styles.headerText}>SI-VOLEI VSC</Text>
+    
+          </View>
+    
+          <View style={styles.secondContainer}>
+            <Text style={styles.secondText}>SUPORTE À GESTÃO DAS ATIVIDADES DESPORTIVAS NA CATEGORIA DE VOLEIBOL</Text>
+          </View>
+    
+          <Image source={require('../assets/VitoriaGuimaraes.png')} style={styles.headerImage} />
+        </View>
+    
+
       <View style={styles.inputContainer}>
-        <Image source={require('../assets/VitoriaGuimaraes.png')} style = {{ width: 150, height: 200, alignSelf: 'center', resizeMode: 'contain'}}/>
         <TextInput
           placeholder="Email"
           value={email}
@@ -43,7 +56,7 @@ const LoginScreen = () => {
           style={styles.input}
         />
         <TextInput
-          placeholder="Password"
+          placeholder="Palavra-Passe"
           value={password}
           onChangeText={text => setPassword(text)}
           style={styles.input}
@@ -52,18 +65,20 @@ const LoginScreen = () => {
       </View>
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          onPress={handleLogin}
-          style={styles.button}
-        >
+      <TouchableOpacity
+       onPress={handleLogin}
+  style={styles.button}
+>
+
           <Text style={styles.buttonText}>Login</Text>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => navigation.navigate('Signin')}
-          style={styles.button}
+          style={[styles.button, styles.buttonOutline]}
         >
-          <Text style={styles.buttonText}>Register</Text>
+          <Text style={styles.buttonOutlineText}>Criar conta</Text>
         </TouchableOpacity>
+    
       </View>
     </KeyboardAvoidingView>
   )
@@ -76,10 +91,38 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#a9a9a9'
+    backgroundColor: 'black',
+  },
+  headerContainer: {
+    alignItems: 'center',
+  },
+  headerImage: {
+    width: 150,
+    height: 200,
+    alignSelf: 'center'
+  },
+  secondImage: {
+    width: 75,
+    height: 75,
+    marginRight: 20,
+  },
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  
+  headerText: {
+    color: 'white',
+    fontSize: 40,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    textAlign:'center',
   },
   inputContainer: {
     width: '80%'
+  },
+  secondContainer: {
+    width: '50%'
   },
   input: {
     backgroundColor: 'white',
@@ -95,32 +138,33 @@ const styles = StyleSheet.create({
     marginTop: 40,
   },
   button: {
-    backgroundColor: 'yellow',
+    backgroundColor: '#FFD700',
     width: '100%',
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',
-    marginBottom: 5
   },
   buttonOutline: {
     backgroundColor: 'white',
     marginTop: 5,
-    borderColor: '#0782F9',
+    borderColor: '#FFD700',
     borderWidth: 2,
   },
-  buttonText: {
+  abuttonText: {
     color: 'white',
     fontWeight: '700',
     fontSize: 16,
   },
+  secondText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    textAlign:'center',
+  },
   buttonOutlineText: {
-    color: '#0782F9',
+    color: '#FFD700',
     fontWeight: '700',
     fontSize: 16,
-  },
-  image :{
-    height: '50%',
-    width: '120%',
-    resizeMode:'contain'
   },
 })
