@@ -20,5 +20,7 @@ const firestore = getFirestore(app);
 export const db = getFirestore(app);
 
 export const usersRef = collection(db, 'users')
+export const eventosRef= collection(db, 'eventos')
+export const relatoriosRef= collection(db, 'relatorios')
 
 
