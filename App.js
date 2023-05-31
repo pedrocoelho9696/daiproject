@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { TailwindProvider } from 'tailwindcss-react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import HomeScreen from './screens/HomeScreen';
+import Calendar from './screens/CalendarScreen';
 import LoginScreen from './screens/LoginScreen';
 import SigninScreen from './screens/SigninScreen';
 import QuizzScreen from './screens/QuizzScreen';
@@ -36,7 +36,7 @@ export default function App() {
         <Stack.Screen options={{ headerShown: false}} name="Signin" component={SigninScreen} />
         <Stack.Screen options={{ headerShown: false }} name="MenuAtleta" component={MenuAtleta} />
         <Stack.Screen options={{ headerShown: false }} name="MenuTreinador" component={MenuTreinador} />
-        <Stack.Screen name="PerfilTreinador" component={PerfilTreinador} />
+        <Stack.Screen options={{ headerShown: false }} name="PerfilTreinador" component={PerfilTreinador} />
         <Stack.Screen options={{ headerShown: false }} name="EditarTreinador" component={EditarTreinador} />
         <Stack.Screen options={{ headerShown: false }} name="PerfilJogador" component={PerfilJogador} />
         <Stack.Screen options={{ headerShown: false }} name="SigninFotoScreen" component={SigninFotoScreen} />
@@ -45,12 +45,12 @@ export default function App() {
         <Stack.Screen options={{ headerShown: false }} name="Admin" component={Admin} />
         <Stack.Screen options={{ headerShown: false }} name="GerirContas" component={GerirContas} />
         <Stack.Screen options={{ headerShown: false }} name="GerirEscaloes" component={GerirEscaloes} />
-        <Stack.Screen options={{ headerShown: false }} name="CriarRelatorio" component={CriarRelatorio} />
+        <Stack.Screen  name="CriarRelatorio" component={CriarRelatorio} />
         <Stack.Screen options={{ headerShown: false }} name="RelatorioPessoal" component={RelatorioPessoal} />
         <Stack.Screen options={{ headerShown: false }} name="AtletaRelatorio" component={AtletaRelatorio} />
         
 
-        <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="Calendario" component={Calendar} />
         <Stack.Screen name="Quizz" component={QuizzScreen} />
         
         
